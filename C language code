@@ -1,0 +1,63 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#define MAX_LINE_LENGTH 1024
+#define OUTPUT_FILE "emails.txt"
+
+void generateEmail(const char* title, const char* parentName, const char* studentName, const char* attendance, FILE* outputFile)
+ {
+    fprintf(outputFile, "Dear %s %s,\n", title, parentName);
+    fprintf(outputFile, "Greetings!\n");
+    fprintf(outputFile, "This is to inform you that the attendance of your ward %s is %s %%.\n", studentName, attendance);
+    fprintf(outputFile, "Thank you.\n\n");
+}
+
+int main() 
+{
+    FILE *inputFile, *outputFile;
+    char line[MAX_LINE_LENGTH];
+
+    // Open input file (CSV) for reading
+    inputFile = fopen("data.csv", "r");
+    if (!inputFile)
+    {
+        perror("Error opening input file");
+        return EXIT_FAILURE;
+    }
+
+    // Open output file for writing
+    outputFile = fopen(OUTPUT_FILE, "w");
+    if (!outputFile) 
+    {
+        perror("Error opening output file");
+        fclose(inputFile);
+        return EXIT_FAILURE;
+    }
+
+    // Skip the header line of the CSV
+    fgets(line, sizeof(line), inputFile);
+
+    // Process each subsequent line of the CSV
+    while (fgets(line, sizeof(line), inputFile)) 
+    {
+        char studentName[100], title[10], parentName[100], attendance[10];
+        
+        // Parse the CSV line into individual fields
+        if (sscanf(line, "%*[^,],%99[^,],%9[^,],%99[^,],%9[^\n]", studentName, title, parentName, attendance) == 4) {
+            // Generate the email and write it to the output file
+            generateEmail(title, parentName, studentName, attendance, outputFile);
+        } 
+        else 
+        {
+            fprintf(stderr, "Invalid line format: %s\n", line);
+        }
+    }
+
+    // Close files
+    fclose(inputFile);
+    fclose(outputFile);
+
+    printf("Emails have been generated and saved in '%s'\n", OUTPUT_FILE);
+    return EXIT_SUCCESS;
+}
